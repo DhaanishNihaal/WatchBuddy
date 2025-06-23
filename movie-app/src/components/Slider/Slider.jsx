@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import Movie from "../Movie";
 
-const Slider = ({ moviess, id, name }) => {
+const Slider = ({ moviess, id, name, title }) => {
   const [movies, setMovies] = useState(moviess);
   const [recentHistory, setRecentHistory] = useState([]);
   const [categories, setCategories] = useState({
@@ -52,65 +52,35 @@ const Slider = ({ moviess, id, name }) => {
     slider.scrollLeft = slider.scrollLeft + 500;
   };
 
-  const renderSlider = (movies, title, sliderId) => (
-    <div className="mb-8">
+  return (
+    <section className="md:px-20 px-5 mt-7">
       <h1 className="font-bold text-[#ECB22E] text-left font-mono text-sm md:text-lg mb-4">
-        {title}
+        {title || `More like ${name?.split(':')[0] || 'these'}`}
       </h1>
       <div className="relative flex items-center group">
         <MdChevronLeft
-          onClick={() => slideLeft(sliderId)}
+          onClick={() => slideLeft(`slider-${id}`)}
           className="bg-[#2D2D2D] text-white left-0 rounded-full absolute opacity-50 hover:opacity-100 cursor-pointer z-10 hidden group-hover:block"
           size={40}
         />
         <div
-          id={sliderId}
+          id={`slider-${id}`}
           className="w-full h-full overflow-x-scroll whitespace-nowrap scroll-smooth scrollbar-hide relative"
         >
-          {movies?.map((item, idx) => (
-            <Movie key={idx} item={item} />
-          ))}
+          <div className="flex gap-2 items-stretch">
+            {movies?.map((item, idx) => (
+              <div key={idx} className="inline-block flex-shrink-0">
+                <Movie item={item} />
+              </div>
+            ))}
+          </div>
         </div>
         <MdChevronRight
-          onClick={() => slideRight(sliderId)}
+          onClick={() => slideRight(`slider-${id}`)}
           className="bg-[#2D2D2D] text-white right-0 rounded-full absolute opacity-50 hover:opacity-100 cursor-pointer z-10 hidden group-hover:block"
           size={40}
         />
       </div>
-    </div>
-  );
-
-  return (
-    <section className="md:px-20 px-5 mt-7">
-      {/* Recent movie recommendations */}
-      {renderSlider(
-        categories.recent,
-        recentHistory.length > 0
-          ? `Because you watched ${recentHistory[0]}`
-          : "Recommended for you",
-        "slider1"
-      )}
-
-      {/* Popular movies */}
-      {renderSlider(
-        categories.popular,
-        "Popular picks for you",
-        "slider2"
-      )}
-
-      {/* Trending movies */}
-      {renderSlider(
-        categories.trending,
-        "Trending now",
-        "slider3"
-      )}
-
-      {/* Similar movies */}
-      {renderSlider(
-        categories.similar,
-        `More like ${name?.split(':')[0] || 'these'}`,
-        "slider4"
-      )}
     </section>
   );
 };
