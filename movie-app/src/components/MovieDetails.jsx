@@ -37,62 +37,71 @@ const MovieDetails = () => {
 
   console.log(video);
 
-  const getRecommendationMovie = (data) => {
-    setRecommendation([]);
-    for (let movie of data.movies) {
-      fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=8321fba1bd0a71fd23430a1b4d42bfd9&query=${movie}`
-      ).then((Response) =>
-        Response.json().then((data) =>
-          setRecommendation((recommendation) => [
-            ...recommendation,
-            data.results[0],
-          ])
-        )
+  const getRecommendationMovie = async (data) => {
+    try {
+      const recommendedMovies = await Promise.all(
+        data.movies.map(async (movie) => {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${movie}`
+          );
+          const data = await response.json();
+          return data.results[0];
+        })
       );
+      setRecommendation(recommendedMovies.filter(movie => movie !== undefined));
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
     }
   };
 
   React.useEffect(() => {
-    const setMoviedata = (apidata) => {
-      const realMovieData = apidata.results[0];
-      console.log(realMovieData.id);
+    const fetchMovieData = async () => {
+      try {
+        setLoading(true);
+        // Fetch movie details
+        const searchResponse = await fetch(
+          `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${id}`
+        );
+        const searchData = await searchResponse.json();
+        const realMovieData = searchData.results[0];
 
-      fetch(
-        `https://api.themoviedb.org/3/movie/${realMovieData.id}?api_key=${apiKey}&append_to_response=videos`
-      ).then((Response) => Response.json().then((data) => gotVideo(data)));
+        // Save to watch history
+        const history = JSON.parse(localStorage.getItem('watchHistory') || '[]');
+        if (!history.includes(id)) {
+          history.unshift(id); // Add to beginning of array
+          if (history.length > 10) history.pop(); // Keep only last 10 movies
+          localStorage.setItem('watchHistory', JSON.stringify(history));
+        }
 
-      fetch(
-        `https://api.themoviedb.org/3/movie/${realMovieData.id}?api_key=8321fba1bd0a71fd23430a1b4d42bfd9&language=en-US`
-      ).then((Response) => {
-        Response.json().then((data) => {
-          setMovie(data);
-        });
-      });
+        // Fetch video data
+        const videoResponse = await fetch(
+          `https://api.themoviedb.org/3/movie/${realMovieData.id}?api_key=${apiKey}&append_to_response=videos`
+        );
+        const videoData = await videoResponse.json();
+        gotVideo(videoData);
+
+        // Fetch detailed movie data
+        const detailsResponse = await fetch(
+          `https://api.themoviedb.org/3/movie/${realMovieData.id}?api_key=${apiKey}&language=en-US`
+        );
+        const detailsData = await detailsResponse.json();
+        setMovie(detailsData);
+
+        // Fetch recommendations
+        const recommendationResponse = await fetch(
+          `https://movie-recommender-system2.onrender.com/api/similarity/${id}`
+        );
+        const recommendationData = await recommendationResponse.json();
+        await getRecommendationMovie(recommendationData);
+      } catch (error) {
+        console.error("Error:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    if (playTrailer) {
-    }
-
-    fetch(
-      `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${id}`
-    )
-      .then((Response) => Response.json().then((data) => setMoviedata(data)))
-      .catch((err) => console.log(err));
-
-    fetch(
-      `https://movie-recommender-system2.onrender.com/api/similarity/${id}`
-    ).then((Response) =>
-      Response.json()
-        .then((data) => {
-          getRecommendationMovie(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        })
-    );
-  }, [id, playTrailer]);
+    fetchMovieData();
+  }, [id, apiKey]);
 
   let genres = "";
 

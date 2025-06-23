@@ -1,4 +1,4 @@
-import React, {  useState } from "react";
+import React, { useState, useCallback } from "react";
 import requests from "../Requests";
 import Hero from "./Hero/Hero";
 import Loading from "./Loading/Loading";
@@ -7,81 +7,78 @@ import Slider from "./Slider/Slider";
 const Home = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [error, setError] = useState(null);
   const [recommendation, setRecommendation] = useState([]);
 
-  let movie = "Avengers";
-  movie = localStorage.getItem("movie")
-    ? localStorage.getItem("movie")
-    : "Avatar";
+  let movie = localStorage.getItem("movie") || "Avatar";
   const apiKey = "8321fba1bd0a71fd23430a1b4d42bfd9";
 
-  const getRecommendationMovie = (data) => {
-    // let counter=16;
-
-    setRecommendation([]);
-    for (let movie of data.movies) {
-      fetch(
-        `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${movie}`
-      ).then((Response) =>
-        Response.json().then((data) =>
-          setRecommendation((recommendation) => [
-            ...recommendation,
-            data.results[0],
-          ])
-        )
+  const getRecommendationMovie = useCallback(async (data) => {
+    try {
+      setLoading(true);
+      const recommendedMovies = await Promise.all(
+        data.movies.map(async (movie) => {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${movie}`
+          );
+          const data = await response.json();
+          return data.results[0];
+        })
       );
-      // counter--;
-      // if (counter === 0) break;
+      setRecommendation(recommendedMovies.filter(movie => movie !== undefined));
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      setError("Failed to fetch recommendations");
+      setLoading(false);
     }
-  };
+  }, [apiKey]);
 
   React.useEffect(() => {
-    let movie = "Avatar";
-    movie = localStorage.getItem("movie")
-      ? localStorage.getItem("movie")
-      : "Avatar";
+    const fetchData = async () => {
+      try {
+        // Fetch all movies
+        const moviesResponse = await fetch("https://movie-recommender-system2.onrender.com/api/movies");
+        const moviesData = await moviesResponse.json();
+        setMovies(moviesData.arr);
 
-    fetch("https://movie-recommender-system2.onrender.com/api/movies")
-      .then((response) => response.json().then((data) => setMovies(data.arr)))
-      .catch((error) => {
-        console.log(error);
-      });
+        // Get recommendations based on selected movie or popular movies
+        if (!movie) {
+          const popularResponse = await fetch(requests.requestPopular);
+          const popularData = await popularResponse.json();
+          setRecommendation(popularData.results);
+        } else {
+          const recommendationResponse = await fetch(
+            `https://movie-recommender-system2.onrender.com/api/similarity/${movie}`
+          );
+          const recommendationData = await recommendationResponse.json();
+          await getRecommendationMovie(recommendationData);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (movie.length === 0) {
-      fetch(requests.requestPopular)
-        .then((response) =>
-          response.json().then((data) => {
-            setRecommendation(data.results);
-            setLoading(false);
-          })
-        )
-        .catch((error) => console.log(error));
-      console.log(recommendation);
-    } else {
-      fetch(`https://movie-recommender-system2.onrender.com/api/similarity/${movie}`).then((Response) =>
-        Response.json()
-          .then((data) => {
-            getRecommendationMovie(data);
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.log(error);
-          })
-      );
-    }
-  }, [loading, movie]);
+    fetchData();
+  }, [movie, getRecommendationMovie]);
+
+  if (error) {
+    return <div className="text-center mt-20 text-red-500">{error}</div>;
+  }
 
   return (
     <>
       {loading ? (
         <Loading />
       ) : (
-        <div className="md:mt-20 ">
+        <div className="md:mt-20">
           <Hero movies={movies} />
           <Slider
             moviess={recommendation}
-            id={localStorage.getItem("movie") == null ? 1 : 2}
+            id={!localStorage.getItem("movie") ? 1 : 2}
             name={movie}
           />
         </div>

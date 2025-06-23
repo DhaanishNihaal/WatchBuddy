@@ -46,19 +46,19 @@ const Hero = ({ movies }) => {
           Welcome.
         </h1>
         <p className="text-white text-sm md:text-xl tracking-wide font-mono">
-          <Typewriter options={{autoStart:true,loop:true,delay:40,strings:["Search here to get AI based movies Recommendation !","Developed & Designed by Subham Mishra 😎😎"]}}></Typewriter>
+          <Typewriter options={{autoStart:true,loop:true,delay:40,strings:["Search here to get AI based movies Recommendation !","Developed & Designed by Dhaanish Nihaal 😎😎"]}}></Typewriter>
         </p>
 
         <div className="flex items-center mt-5 md:mt-7">
           <div className="flex space-x-1  w-full md:p-0 p-4">
             <input
               type="text"
-              className="block w-full md:text-base text-sm   px-4 py-2 text-purple-700 bg-white border rounded-lg focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
+              className="block w-full md:text-base text-sm px-4 py-2 text-[#4A154B] bg-white border rounded-lg focus:border-[#ECB22E] focus:ring-[#ECB22E] focus:outline-none focus:ring focus:ring-opacity-40"
               placeholder="Search movies..."
               onChange={handleOnchange}
             />
             <button
-              className="px-4 text-white bg-[#085797] rounded-md "
+              className="px-4 text-white bg-[#ECB22E] rounded-md hover:bg-[#4A154B] transition-colors duration-300"
               onClick={handleSubmit}
             >
               <svg
