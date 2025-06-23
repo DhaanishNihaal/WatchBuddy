@@ -11,11 +11,16 @@ const Home = () => {
   const [recommendation, setRecommendation] = useState([]);
   const [trendingMovies, setTrendingMovies] = useState([]);
   const [recentMovies, setRecentMovies] = useState([]);
+  
+  // TV states
+  const [popularTV, setPopularTV] = useState([]);
+  const [trendingTV, setTrendingTV] = useState([]);
+  const [topRatedTV, setTopRatedTV] = useState([]);
 
   let movie = localStorage.getItem("movie") || "Avatar";
   const apiKey = "8321fba1bd0a71fd23430a1b4d42bfd9";
 
-  // Fetch trending and recent movies
+  // Fetch trending and recent movies, and TV shows
   useEffect(() => {
     const fetchMoviesData = async () => {
       try {
@@ -27,11 +32,26 @@ const Home = () => {
         // Fetch recent movies
         const recentResponse = await fetch(requests.requestRecent);
         const recentData = await recentResponse.json();
-        // Filter out movies without posters
         const moviesWithPosters = recentData.results.filter(movie => movie.poster_path);
         setRecentMovies(moviesWithPosters);
+
+        // Fetch TV shows
+        const [popularTVRes, trendingTVRes, topRatedTVRes] = await Promise.all([
+          fetch(requests.requestPopularTV),
+          fetch(requests.requestTrendingTV),
+          fetch(requests.requestTopRatedTV)
+        ]);
+
+        const popularTVData = await popularTVRes.json();
+        const trendingTVData = await trendingTVRes.json();
+        const topRatedTVData = await topRatedTVRes.json();
+
+        setPopularTV(popularTVData.results.filter(show => show.poster_path));
+        setTrendingTV(trendingTVData.results.filter(show => show.poster_path));
+        setTopRatedTV(topRatedTVData.results.filter(show => show.poster_path));
+
       } catch (error) {
-        console.error("Error fetching movies:", error);
+        console.error("Error fetching content:", error);
       }
     };
     fetchMoviesData();
@@ -46,7 +66,6 @@ const Home = () => {
             `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${movie}`
           );
           const data = await response.json();
-          // Return first result that has a poster
           return data.results.find(m => m.poster_path);
         })
       );
@@ -115,7 +134,7 @@ const Home = () => {
             <Slider
               moviess={trendingMovies}
               id={3}
-              title="Trending This Week"
+              title="Trending Movies This Week"
             />
           )}
 
@@ -128,12 +147,40 @@ const Home = () => {
             />
           )}
 
+          {/* TV Series Sections */}
+          {popularTV.length > 0 && (
+            <Slider
+              moviess={popularTV}
+              id="popular-tv"
+              title="Popular TV Shows"
+              isTV={true}
+            />
+          )}
+
+          {trendingTV.length > 0 && (
+            <Slider
+              moviess={trendingTV}
+              id="trending-tv"
+              title="Trending TV Shows"
+              isTV={true}
+            />
+          )}
+
+          {topRatedTV.length > 0 && (
+            <Slider
+              moviess={topRatedTV}
+              id="top-rated-tv"
+              title="Top Rated TV Shows"
+              isTV={true}
+            />
+          )}
+
           {/* Recently Added Movies */}
           {recentMovies.length > 0 && (
             <Slider
               moviess={recentMovies}
               id="recent"
-              title="Recently Added"
+              title="Recently Added Movies"
             />
           )}
         </div>

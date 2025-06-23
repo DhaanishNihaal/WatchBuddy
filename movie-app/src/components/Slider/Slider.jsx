@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import Movie from "../Movie";
 
-const Slider = ({ moviess, id, name, title }) => {
+const Slider = ({ moviess, id, name, title, isTV = false }) => {
   const [movies, setMovies] = useState(moviess);
   const [recentHistory, setRecentHistory] = useState([]);
   const [categories, setCategories] = useState({
@@ -42,13 +42,13 @@ const Slider = ({ moviess, id, name, title }) => {
     return chunked;
   };
 
-  const slideLeft = (sliderId) => {
-    const slider = document.getElementById(sliderId);
+  const slideLeft = () => {
+    const slider = document.getElementById(`slider-${id}`);
     slider.scrollLeft = slider.scrollLeft - 500;
   };
 
-  const slideRight = (sliderId) => {
-    const slider = document.getElementById(sliderId);
+  const slideRight = () => {
+    const slider = document.getElementById(`slider-${id}`);
     slider.scrollLeft = slider.scrollLeft + 500;
   };
 
@@ -59,7 +59,7 @@ const Slider = ({ moviess, id, name, title }) => {
       </h1>
       <div className="relative flex items-center group">
         <MdChevronLeft
-          onClick={() => slideLeft(`slider-${id}`)}
+          onClick={slideLeft}
           className="bg-[#2D2D2D] text-white left-0 rounded-full absolute opacity-50 hover:opacity-100 cursor-pointer z-10 hidden group-hover:block"
           size={40}
         />
@@ -70,13 +70,13 @@ const Slider = ({ moviess, id, name, title }) => {
           <div className="flex gap-2 items-stretch">
             {movies?.map((item, idx) => (
               <div key={idx} className="inline-block flex-shrink-0">
-                <Movie item={item} />
+                <Movie item={item} isTV={isTV} />
               </div>
             ))}
           </div>
         </div>
         <MdChevronRight
-          onClick={() => slideRight(`slider-${id}`)}
+          onClick={slideRight}
           className="bg-[#2D2D2D] text-white right-0 rounded-full absolute opacity-50 hover:opacity-100 cursor-pointer z-10 hidden group-hover:block"
           size={40}
         />

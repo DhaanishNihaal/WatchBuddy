@@ -5,19 +5,15 @@ from flask_cors import CORS, cross_origin
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from flask import Flask, request, render_template, jsonify
-import os
 
-# Get the current directory
-current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Load the model files using absolute paths
-movies_dict = load(open(os.path.join(current_dir, 'movies_dict.joblib'), 'rb'))
-similarity = load(open(os.path.join(current_dir, 'similarity.joblib'), 'rb'))
+movies_dict = load(open('movies_dict.joblib', 'rb'))
+similarity = load(open('similarity.joblib', 'rb'))
 movies = pd.DataFrame(movies_dict)
 
 
 def getAllMovies():
-    data = pd.read_csv(os.path.join(current_dir, 'movie.csv'))
+    data = pd.read_csv('movie.csv')
     return list(data['movie_title'].str.capitalize())
 
 
@@ -42,7 +38,7 @@ def Recommend2(movie: str):
         return recommended_movies
 
 
-app = Flask(__name__, static_folder=os.path.join(current_dir, '..', 'movie-app', 'public'),
+app = Flask(__name__, static_folder='movie-app/public',
             static_url_path='/')
 
 CORS(app)

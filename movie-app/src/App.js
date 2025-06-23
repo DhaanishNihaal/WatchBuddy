@@ -5,6 +5,8 @@ import Header from "./components/Header/Header";
 import Home from "./components/Home";
 
 import MovieDetails from "./components/MovieDetails";
+import TVShows from "./components/TVShows";
+import TVDetails from "./components/TVDetails";
 
 import React from "react";
 import Footer from "./components/Footer";
@@ -19,6 +21,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/movie/:id" element={<MovieDetails />} />
+        <Route path="/tv" element={<TVShows />} />
+        <Route path="/tv/:id" element={<TVDetails />} />
       </Routes>
       <Footer />
     </>
