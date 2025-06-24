@@ -22,4 +22,9 @@ A full-stack Movie Recommendation Web App using **React.js (frontend)** and **Fl
 | Tailwind CSS    | SQLite      | Render, Vercel  |
 
 ## 📂 Project Structure
+movie-recommender-system/
+├── client/ # React frontend (WatchBuddy UI)
+├── server/ # Flask backend API with ML logic
+├── requirements.txt # Python dependencies
+└── README.md
 
