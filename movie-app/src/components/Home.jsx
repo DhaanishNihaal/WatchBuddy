@@ -4,7 +4,7 @@ import Hero from "./Hero/Hero";
 import Loading from "./Loading/Loading";
 import Slider from "./Slider/Slider";
 
-const Home = () => {
+const Home = ({ showTV = false }) => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,27 +35,29 @@ const Home = () => {
         const moviesWithPosters = recentData.results.filter(movie => movie.poster_path);
         setRecentMovies(moviesWithPosters);
 
-        // Fetch TV shows
-        const [popularTVRes, trendingTVRes, topRatedTVRes] = await Promise.all([
-          fetch(requests.requestPopularTV),
-          fetch(requests.requestTrendingTV),
-          fetch(requests.requestTopRatedTV)
-        ]);
+        // Only fetch TV shows if showTV is true
+        if (showTV) {
+          const [popularTVRes, trendingTVRes, topRatedTVRes] = await Promise.all([
+            fetch(requests.requestPopularTV),
+            fetch(requests.requestTrendingTV),
+            fetch(requests.requestTopRatedTV)
+          ]);
 
-        const popularTVData = await popularTVRes.json();
-        const trendingTVData = await trendingTVRes.json();
-        const topRatedTVData = await topRatedTVRes.json();
+          const popularTVData = await popularTVRes.json();
+          const trendingTVData = await trendingTVRes.json();
+          const topRatedTVData = await topRatedTVRes.json();
 
-        setPopularTV(popularTVData.results.filter(show => show.poster_path));
-        setTrendingTV(trendingTVData.results.filter(show => show.poster_path));
-        setTopRatedTV(topRatedTVData.results.filter(show => show.poster_path));
+          setPopularTV(popularTVData.results.filter(show => show.poster_path));
+          setTrendingTV(trendingTVData.results.filter(show => show.poster_path));
+          setTopRatedTV(topRatedTVData.results.filter(show => show.poster_path));
+        }
 
       } catch (error) {
         console.error("Error fetching content:", error);
       }
     };
     fetchMoviesData();
-  }, []);
+  }, [showTV]);
 
   const getRecommendationMovie = useCallback(async (data) => {
     try {
@@ -147,32 +149,36 @@ const Home = () => {
             />
           )}
 
-          {/* TV Series Sections */}
-          {popularTV.length > 0 && (
-            <Slider
-              moviess={popularTV}
-              id="popular-tv"
-              title="Popular TV Shows"
-              isTV={true}
-            />
-          )}
+          {/* TV Series Sections - only shown when showTV is true */}
+          {showTV && (
+            <>
+              {popularTV.length > 0 && (
+                <Slider
+                  moviess={popularTV}
+                  id="popular-tv"
+                  title="Popular TV Shows"
+                  isTV={true}
+                />
+              )}
 
-          {trendingTV.length > 0 && (
-            <Slider
-              moviess={trendingTV}
-              id="trending-tv"
-              title="Trending TV Shows"
-              isTV={true}
-            />
-          )}
+              {trendingTV.length > 0 && (
+                <Slider
+                  moviess={trendingTV}
+                  id="trending-tv"
+                  title="Trending TV Shows"
+                  isTV={true}
+                />
+              )}
 
-          {topRatedTV.length > 0 && (
-            <Slider
-              moviess={topRatedTV}
-              id="top-rated-tv"
-              title="Top Rated TV Shows"
-              isTV={true}
-            />
+              {topRatedTV.length > 0 && (
+                <Slider
+                  moviess={topRatedTV}
+                  id="top-rated-tv"
+                  title="Top Rated TV Shows"
+                  isTV={true}
+                />
+              )}
+            </>
           )}
 
           {/* Recently Added Movies */}

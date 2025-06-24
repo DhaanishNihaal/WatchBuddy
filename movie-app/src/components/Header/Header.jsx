@@ -25,36 +25,39 @@ const Header = () => {
   }, [isTV]);
 
   useEffect(() => {
-    // Fetch movies for suggestions
-    fetch("https://movie-recommender-system2.onrender.com/api/movies")
-      .then((response) => response.json())
-      .then((data) => setMovies(data.arr))
-      .catch((error) => console.error("Error fetching movies:", error));
+    // Only fetch data based on current page type
+    if (!isTV) {
+      // Fetch movies for suggestions
+      fetch("https://movie-recommender-system2.onrender.com/api/movies")
+        .then((response) => response.json())
+        .then((data) => setMovies(data.arr))
+        .catch((error) => console.error("Error fetching movies:", error));
+    } else {
+      // Fetch TV shows for suggestions
+      const fetchTVShows = async () => {
+        try {
+          const [popularRes, topRatedRes] = await Promise.all([
+            fetch(requests.requestPopularTV),
+            fetch(requests.requestTopRatedTV)
+          ]);
+          
+          const popularData = await popularRes.json();
+          const topRatedData = await topRatedRes.json();
+          
+          // Combine and deduplicate shows
+          const allShows = [...popularData.results, ...topRatedData.results];
+          const uniqueShows = Array.from(new Set(allShows.map(show => show.name)))
+            .map(name => allShows.find(show => show.name === name));
+          
+          setTvShows(uniqueShows);
+        } catch (error) {
+          console.error("Error fetching TV shows:", error);
+        }
+      };
 
-    // Fetch TV shows for suggestions
-    const fetchTVShows = async () => {
-      try {
-        const [popularRes, topRatedRes] = await Promise.all([
-          fetch(requests.requestPopularTV),
-          fetch(requests.requestTopRatedTV)
-        ]);
-        
-        const popularData = await popularRes.json();
-        const topRatedData = await topRatedRes.json();
-        
-        // Combine and deduplicate shows
-        const allShows = [...popularData.results, ...topRatedData.results];
-        const uniqueShows = Array.from(new Set(allShows.map(show => show.name)))
-          .map(name => allShows.find(show => show.name === name));
-        
-        setTvShows(uniqueShows);
-      } catch (error) {
-        console.error("Error fetching TV shows:", error);
-      }
-    };
-
-    fetchTVShows();
-  }, []);
+      fetchTVShows();
+    }
+  }, [isTV]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -131,17 +134,13 @@ const Header = () => {
           <nav className="hidden md:flex gap-6">
             <button
               onClick={() => navigate("/")}
-              className={`hover:text-[#ECB22E] transition-colors ${
-                isActive("/") ? "text-[#ECB22E]" : ""
-              }`}
+              className={`transition-colors ${isActive("/") ? "text-[#ECB22E]" : "hover:text-[#ECB22E]"}`}
             >
               Movies
             </button>
             <button
               onClick={() => navigate("/tv")}
-              className={`hover:text-[#ECB22E] transition-colors ${
-                isActive("/tv") ? "text-[#ECB22E]" : ""
-              }`}
+              className={`transition-colors ${isActive("/tv") ? "text-[#ECB22E]" : "hover:text-[#ECB22E]"}`}
             >
               TV Shows
             </button>

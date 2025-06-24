@@ -19,7 +19,7 @@ function App() {
 
       <Header />
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home showTV={false} />} />
         <Route path="/movie/:id" element={<MovieDetails />} />
         <Route path="/tv" element={<TVShows />} />
         <Route path="/tv/:id" element={<TVDetails />} />

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import requests from "../../Requests";
-import Typewriter from 'typewriter-effect';
 
 const Hero = () => {
   const [movies, setMovies] = useState([]);
@@ -9,7 +8,22 @@ const Hero = () => {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [filteredMovie, setFilteredMovie] = useState([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
+
+  // Auto-slide effect with smooth transition
+  useEffect(() => {
+    if (movies.length === 0) return;
+
+    const slideTimer = setInterval(() => {
+      const nextIndex = (currentMovieIndex + 1) % movies.length;
+      setIsTransitioning(true);
+      setCurrentMovieIndex(nextIndex);
+      setTimeout(() => setIsTransitioning(false), 500);
+    }, 6000); // Total time per slide: 6s (5.5s display + 0.5s transition)
+
+    return () => clearInterval(slideTimer);
+  }, [movies.length, currentMovieIndex]);
 
   useEffect(() => {
     const fetchTopRatedMovies = async () => {
@@ -32,16 +46,12 @@ const Hero = () => {
     fetchTopRatedMovies();
   }, []);
 
-  // Auto-slide effect
-  useEffect(() => {
-    if (movies.length === 0) return;
-
-    const interval = setInterval(() => {
-      setCurrentMovieIndex((prevIndex) => (prevIndex + 1) % movies.length);
-    }, 5000); // Change slide every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [movies]);
+  const handleSlideChange = (newIndex) => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentMovieIndex(newIndex);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
 
   const handleSearch = async (e) => {
     const value = e.target.value;
@@ -70,23 +80,28 @@ const Hero = () => {
   const currentMovie = movies[currentMovieIndex];
 
   return (
-    <section className="w-full h-[550px] text-white">
-      <div className="w-full h-full">
-        <div className="absolute w-full h-[550px] bg-gradient-to-r from-black"></div>
+    <section className="w-full h-[550px] text-white overflow-hidden mt-16">
+      <div className="w-full h-full relative">
+        <div className="absolute w-full h-[550px] bg-gradient-to-r from-black z-10"></div>
         {!loading && currentMovie && (
           <>
             <img
-              className="w-full h-full object-cover"
+              key={currentMovie.id}
+              className={`w-full h-full object-cover absolute top-0 left-0 transition-all duration-500 ${
+                isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+              }`}
               src={`https://image.tmdb.org/t/p/original/${currentMovie.backdrop_path}`}
               alt={currentMovie.title}
             />
-            <div className="absolute w-full top-[20%] p-4 md:p-8">
+            <div className={`absolute w-full top-[20%] p-4 md:p-8 z-20 transition-all duration-500 ${
+              isTransitioning ? 'opacity-0 translate-y-[-10px]' : 'opacity-100 translate-y-0'
+            }`}>
               <h1 className="text-3xl md:text-5xl font-bold">
                 {currentMovie.title}
               </h1>
               <div className="my-4">
                 <button
-                  className="border bg-gray-300 text-black border-gray-300 py-2 px-5 hover:bg-[#ECB22E] hover:border-[#ECB22E]"
+                  className="border bg-gray-300 text-black border-gray-300 py-2 px-5 hover:bg-[#ECB22E] hover:border-[#ECB22E] transition-colors duration-300"
                   onClick={() => navigate(`/movie/${currentMovie.title}`)}
                 >
                   View Details
@@ -110,7 +125,7 @@ const Hero = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="absolute top-24 right-4 md:right-8 w-72">
+      <div className="absolute top-24 right-4 md:right-8 w-72 z-30">
         <input
           onChange={handleSearch}
           value={name}
@@ -138,14 +153,15 @@ const Hero = () => {
       </div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
         {movies.map((_, index) => (
           <button
             key={index}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentMovieIndex ? 'bg-[#ECB22E] w-4' : 'bg-gray-400'
+              index === currentMovieIndex ? 'bg-[#ECB22E] w-6' : 'bg-gray-400 hover:bg-gray-300'
             }`}
-            onClick={() => setCurrentMovieIndex(index)}
+            onClick={() => handleSlideChange(index)}
+            disabled={isTransitioning}
           />
         ))}
       </div>

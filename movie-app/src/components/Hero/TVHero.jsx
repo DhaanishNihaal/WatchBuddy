@@ -8,7 +8,22 @@ const TVHero = () => {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [filteredShows, setFilteredShows] = useState([]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
+
+  // Auto-slide effect with smooth transition
+  useEffect(() => {
+    if (shows.length === 0) return;
+
+    const slideTimer = setInterval(() => {
+      const nextIndex = (currentShowIndex + 1) % shows.length;
+      setIsTransitioning(true);
+      setCurrentShowIndex(nextIndex);
+      setTimeout(() => setIsTransitioning(false), 500);
+    }, 6000); // Total time per slide: 6s (5.5s display + 0.5s transition)
+
+    return () => clearInterval(slideTimer);
+  }, [shows.length, currentShowIndex]);
 
   useEffect(() => {
     const fetchTopRatedShows = async () => {
@@ -29,16 +44,12 @@ const TVHero = () => {
     fetchTopRatedShows();
   }, []);
 
-  // Auto-slide effect
-  useEffect(() => {
-    if (shows.length === 0) return;
-
-    const interval = setInterval(() => {
-      setCurrentShowIndex((prevIndex) => (prevIndex + 1) % shows.length);
-    }, 5000); // Change slide every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [shows]);
+  const handleSlideChange = (newIndex) => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentShowIndex(newIndex);
+    setTimeout(() => setIsTransitioning(false), 500);
+  };
 
   const handleSearch = async (e) => {
     const value = e.target.value;
@@ -63,21 +74,26 @@ const TVHero = () => {
   const currentShow = shows[currentShowIndex];
 
   return (
-    <section className="w-full h-[550px] text-white">
-      <div className="w-full h-full">
-        <div className="absolute w-full h-[550px] bg-gradient-to-r from-black"></div>
+    <section className="w-full h-[550px] text-white overflow-hidden mt-16">
+      <div className="w-full h-full relative">
+        <div className="absolute w-full h-[550px] bg-gradient-to-r from-black z-10"></div>
         {!loading && currentShow && (
           <>
             <img
-              className="w-full h-full object-cover"
+              key={currentShow.id}
+              className={`w-full h-full object-cover absolute top-0 left-0 transition-all duration-500 ${
+                isTransitioning ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+              }`}
               src={`https://image.tmdb.org/t/p/original/${currentShow.backdrop_path}`}
               alt={currentShow.name}
             />
-            <div className="absolute w-full top-[20%] p-4 md:p-8">
+            <div className={`absolute w-full top-[20%] p-4 md:p-8 z-20 transition-all duration-500 ${
+              isTransitioning ? 'opacity-0 translate-y-[-10px]' : 'opacity-100 translate-y-0'
+            }`}>
               <h1 className="text-3xl md:text-5xl font-bold">{currentShow.name}</h1>
               <div className="my-4">
                 <button
-                  className="border bg-gray-300 text-black border-gray-300 py-2 px-5 hover:bg-[#ECB22E] hover:border-[#ECB22E]"
+                  className="border bg-gray-300 text-black border-gray-300 py-2 px-5 hover:bg-[#ECB22E] hover:border-[#ECB22E] transition-colors duration-300"
                   onClick={() => navigate(`/tv/${currentShow.name}`)}
                 >
                   View Details
@@ -101,7 +117,7 @@ const TVHero = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="absolute top-24 right-4 md:right-8 w-72">
+      <div className="absolute top-24 right-4 md:right-8 w-72 z-30">
         <input
           onChange={handleSearch}
           value={name}
@@ -129,14 +145,15 @@ const TVHero = () => {
       </div>
 
       {/* Slide Indicators */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-30">
         {shows.map((_, index) => (
           <button
             key={index}
             className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentShowIndex ? 'bg-[#ECB22E] w-4' : 'bg-gray-400'
+              index === currentShowIndex ? 'bg-[#ECB22E] w-6' : 'bg-gray-400 hover:bg-gray-300'
             }`}
-            onClick={() => setCurrentShowIndex(index)}
+            onClick={() => handleSlideChange(index)}
+            disabled={isTransitioning}
           />
         ))}
       </div>
