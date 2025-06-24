@@ -38,8 +38,8 @@ def Recommend2(movie: str):
         return recommended_movies
 
 
-app = Flask(__name__, static_folder='movie-app/public',
-            static_url_path='/')
+app = Flask(__name__, static_folder='movie-app-build', static_url_path='/')
+
 
 CORS(app)
 
