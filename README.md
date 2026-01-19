@@ -1,18 +1,18 @@
-# 🎬 WatchBuddy
+#  WatchBuddy
 
 A full-stack Movie Recommendation Web App using **React.js (frontend)** and **Flask (backend)**.
 
 🔗 Live Site: [https://watch-buddy-894r.vercel.app](https://watch-buddy-894r.vercel.app)
 
-## 🚀 Features
+##  Features
 
-- 🔍 Search for your favorite movies
-- 🧠 Personalized recommendations using machine learning
-- 📚 Genre-based and trending movie sliders
-- 🎥 Embedded video previews using ReactPlayer
-- 🌐 Deployed with Vercel (frontend) and Render (backend)
+-  Search for your favorite movies
+-  Personalized recommendations using machine learning
+-  Genre-based and trending movie sliders
+-  Embedded video previews using ReactPlayer
+-  Deployed with Vercel (frontend) and Render (backend)
 
-## 🧰 Tech Stack
+##  Tech Stack
 
 | Frontend        | Backend     | ML & Tools      |
 |-----------------|-------------|-----------------|
@@ -27,4 +27,5 @@ movie-recommender-system/
 ├── server/ # Flask backend API with ML logic
 ├── requirements.txt # Python dependencies
 └── README.md
+
 
